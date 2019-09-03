@@ -15,9 +15,9 @@
 % recursively approximiates the corresponding Boltzmann distributions [3].
 %--------------------------------------------------------------------------
 % REFERENCES
-% [1] Qi Zhang and Jiaqiao Hu: Actor-Critic Like Stochastic Adaptive Search
-% for Continuous Simulation Optimization. Submitted to Operations Research,
-% under review.
+% [1] Qi Zhang and Jiaqiao Hu: Simulation Optimization Using Multi-time-scale
+% Adaptive Random Search. Submitted to Asia-Pacific Journal of Operational 
+% Research, under review.
 % [2] Qi Zhang and Jiaqiao Hu: A Two-time-scale Adaptive Search Algorithm
 % for Global Optimization. The Proceedings of the 2017 Winter Simulation 
 % Conference, pp. 2069-2079.
