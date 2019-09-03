@@ -157,7 +157,7 @@ while num_evaluation+1<=budget
         ylabel('Objective function value')
         title(sprintf('<%s function>   Iteration: %5d  Evaluation: %5d',fcn_name,k,num_evaluation));
         legend('MTS-MARS','True optimal value','Location','southeast');
-        ylim([c_best_H(1)*1.1 -0.8]);
+        ylim([c_best_H(1)*1.1 1000]);
         grid on
         drawnow;
     end
