@@ -11,6 +11,6 @@
 4. In this implementation, the algorithm samples candidate solutions from a sequence of independent multivariate normal distributions that recursively  approximiates the corresponding Boltzmann distributions [2].
 
 ### Reference:
-1. Qi Zhang and Jiaqiao Hu: Simulation Optimization Using Multi-time-scale Adaptive Random Search. Submitted to Asia-Pacific Journal of Operational Research, under review.
+1. Qi Zhang and Jiaqiao Hu (2019): Simulation Optimization Using Multi-time-scale Adaptive Random Search. Submitted to Asia-Pacific Journal of Operational Research, under review.
 2. Jiaqiao Hu and Ping Hu (2011): Annealing adaptive search, cross-entropy, and stochastic approximation in global optimization. Naval Research Logistics 58(5):457-477.
-3. Qi Zhang and Jiaqiao Hu: A Two-time-scale Adaptive Search Algorithm for Global Optimization. The Proceedings of the 2017 Winter Simulation Conference, pp. 2069-2079.
+3. Qi Zhang and Jiaqiao Hu (2017): A Two-time-scale Adaptive Search Algorithm for Global Optimization. The Proceedings of the 2017 Winter Simulation Conference, pp. 2069-2079.
