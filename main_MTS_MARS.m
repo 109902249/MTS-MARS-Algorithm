@@ -10,7 +10,7 @@
 % 2. The MTS-MARS algorithm generalizes the TS-MARS algorithm [2] where the
 % former version is designed for sovling single-objective box-constrained 
 % expensive deterministic optimization problems.
-% 2. In this implementation, the algorithm samples candidate solutions from 
+% 3. In this implementation, the algorithm samples candidate solutions from 
 % a sequence of independent multivariate normal distributions that 
 % recursively approximiates the corresponding Boltzmann distributions [3].
 %--------------------------------------------------------------------------
