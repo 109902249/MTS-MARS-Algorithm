@@ -90,6 +90,7 @@ c_best_H=[]; c_best_H(1)=-inf;
 
 %% MAIN LOOP
 fprintf('Main loop begin.\n');
+tic; % count main loop time
 k=0; % iteration counter
 num_evaluation=0; % budget consumption
 while num_evaluation+1<=budget
@@ -166,3 +167,6 @@ end
 %% FINAL REPORT
 fprintf('iter: %5d, eval: %5d, cur best: %8.4f, true optimum: %8.4f \n',...
     k,num_evaluation,c_best_H(k),optimal_objective_value);
+fprintf('Main loop ends \n');
+tMainLoop=toc; % count main loop time
+fprintf('Main loop takes %8.4f seconds \n',tMainLoop);
