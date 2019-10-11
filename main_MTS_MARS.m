@@ -1,18 +1,18 @@
 %--------------------------------------------------------------------------
 % Corresponding author: Qi Zhang
-% Department of Applied Mathematics and Statistics,
+% Department of Applied Mathematics and Statistics
 % Math Tower P137, Stony Brook University, Stony Brook, NY 11794-3600
 % Email: zhangqi{dot}math@gmail{dot}com
 %--------------------------------------------------------------------------
 % 1. The MTS-MARS algorithm by Qi Zhang and Jiaqiao Hu [1] is implemented 
 % for solving single-objective box-constrained expensive stochastic
-% optimization problems.
+% optimization problems
 % 2. The MTS-MARS algorithm generalizes the TS-MARS algorithm [2] where the
 % former version is designed for sovling single-objective box-constrained 
-% expensive deterministic optimization problems.
+% expensive deterministic optimization problems
 % 3. In this implementation, the algorithm samples candidate solutions from 
 % a sequence of independent multivariate normal distributions that 
-% recursively approximiates the corresponding Boltzmann distributions [3].
+% recursively approximiates the corresponding Boltzmann distributions [3]
 %--------------------------------------------------------------------------
 % REFERENCES
 % [1] Qi Zhang and Jiaqiao Hu (2019): Simulation Optimization Using Multi-time-scale
@@ -31,16 +31,17 @@
 % but WITHOUT ANY WARRANTY, without even the implied warranty of
 % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 %--------------------------------------------------------------------------
+
 clearvars; close all;
 %% PROBLEM SETTING
 % The test function H(x) is the sum squares function in dimension 20 (d=20)
 % with box-constrain [-20,20]^d
-% and shifted to have an optimal(max) objective value -1.
-% Three types of observation noise z(x) are tested. In particular,
+% and shifted to have an optimal(max) objective value -1
+% Three types of observation noise z(x) are tested.
 % 1. Independent noise: z(x)~TN(0,K)
 % 2. Proportional noise: z(x)~TN(0,K/|H(x)|)
 % 3. Solution-dependent noise: z(x)~TN(0,K|H(x)|)
-% where TN is the truncated normal distribution.
+% where TN is the truncated normal distribution
 d=20; % dimension of the search region
 left_bound=-20; % left bound of the search region
 right_bound=20; % right bound of the search region
@@ -70,72 +71,52 @@ b1=50; b2=2000; gamma_b=0.51;
 % random initial annealing temperature
 t=abs(feval(fcn_name,left_bound+(right_bound-left_bound)*rand(d,1)))/6;
 % lambda: step-size for the annealing temperature
-% lambda=1/(k+|hk*|)^gamma_t where |hk*| is the current best objective
-% function value
+% lambda=1/(k+|hk*|)^gamma_t
+% where |hk*| is the current best objective function value
 gamma_t=0.98;
 
 %% INITIALIZATION
-% initial mean of the sampling distribution
-mu_old=left_bound+(right_bound-left_bound)*rand(d,1);
-% initial variance of the sampling distribution
-var_old=((right_bound-left_bound)/2)^2*ones(d,1);
+mu_old=left_bound+(right_bound-left_bound)*rand(d,1); % initial mean of the sampling distribution
+var_old=((right_bound-left_bound)/2)^2*ones(d,1); % initial variance of the sampling distribution
+G_x_old=zeros(d,1); G_x2_old=zeros(d,1); % initial gradient estimator Gamma(X) = (X,X^2)^T
+
 % calculating the initial gradient estimator
-[eta_x_old,eta_x2_old]=...
-    truncated_mean_para_fcn(left_bound,right_bound,mu_old,var_old);
-% initial gradient estimator Gamma(X) = (X,X^2)^T
-G_x_old=zeros(d,1); 
-G_x2_old=zeros(d,1);
+[eta_x_old,eta_x2_old]=truncated_mean_para_fcn(left_bound,right_bound,mu_old,var_old);
 % record current best true objective values found at each step
-c_best_H=[]; c_best_H(1)=-inf;
+best_H=[]; best_H(1)=-inf;
 
 %% MAIN LOOP
-fprintf('Main loop begin.\n');
-tic; % count main loop time
+fprintf('Main loop begins.\n'); tic; % count main loop time
 k=0; % iteration counter
 num_evaluation=0; % budget consumption
 while num_evaluation+1<=budget
     %% PROGRESS REPORT
     if mod(k,1000)==0 && k>0
         fprintf('iter: %5d, eval: %5d, cur best: %8.4f, true optimum: %8.4f \n',...
-            k,num_evaluation,c_best_H(k),optimal_objective_value);
+            k,num_evaluation,best_H(k),optimal_objective_value);
     end
     k=k+1;
     
     %% SAMPLING
-    % Given the sampling parameter theta_old=(mu_old,var_old),
-    % generate a sample x from the independent multivariate normal density.
+    % given the sampling parameter theta_old=(mu_old,var_old)
+    % generate a sample x from the independent multivariate normal density
     X_sample=normt_rnd(mu_old,var_old,left_bound,right_bound);              
     
     %% PERFORMANCE ESTIMATIONS
     cur_H=feval(fcn_name,X_sample); % current objective function value
-    num_evaluation=num_evaluation+1;
-    c_best_H(k)=max(c_best_H(end),cur_H);    
-    switch noise_case
-        case 'indep_noise'
-            noise=normt_rnd(0,K,-noise_bound,noise_bound);
-        case 'prop_noise'
-            noise=normt_rnd(0,K/abs(cur_H),-noise_bound,noise_bound);
-        case 'solu_dep_noise'
-            noise=normt_rnd(0,K*abs(cur_H),-noise_bound,noise_bound);
-    end
-    cur_h=cur_H+noise; % current noisy observation
+    cur_h=noisy_observation(cur_H,noise_case,K,noise_bound); % current noisy observation
+    num_evaluation=num_evaluation+1; best_H(k)=max(best_H(end),cur_H);    
+    
 
     %% ADAPTIVE HYPERPARAMETERS
-    % alpha: learning rate for updating the mean parameter function
-    alpha=a1/(k+a2)^gamma_a;
-    % beta: learning rate for updating the gradient estimator
-    beta=b1/(k+b2)^gamma_b;
-    % lambda: step-size for the annealing temperature
-    lambda=1/(k+abs(c_best_H(k)))^gamma_t;
-    t=t*(1-lambda); % current annealing temperature
+    [alpha,beta,t]=adaptive_hyper_para(k,a1,a2,gamma_a,b1,b2,gamma_b,best_H(k),gamma_t,t);
     
     %%  GRADIENT ESTIMATOR
     G_x_new=G_x_old+beta*( exp(cur_h/t).*X_sample-exp(cur_h/t).*G_x_old);
-    G_x2_new=G_x2_old+beta*(exp(cur_h/t).*X_sample.* X_sample-...
-        exp(cur_h/t).*G_x2_old );
+    G_x2_new=G_x2_old+beta*(exp(cur_h/t).*X_sample.* X_sample-exp(cur_h/t).*G_x2_old );
     
     %% MEAN PRARMETER FUNCTION
-    eta_x_new = eta_x_old+alpha*(G_x_new-eta_x_old);
+    eta_x_new=eta_x_old+alpha*(G_x_new-eta_x_old);
     eta_x2_new=eta_x2_old+alpha*(G_x2_new-eta_x2_old);
     
     %% SAMPLING PARAMETER UPDATING
@@ -149,16 +130,16 @@ while num_evaluation+1<=budget
     
     %% VISUALIZATION
     if mod(k,1000)==0
-        plot(c_best_H,'r-o'); % current best
+        plot(best_H,'r-o'); % current best
         hold on
-        cur_size=size(c_best_H);
+        cur_size=size(best_H);
         optimal_line=optimal_objective_value*ones(cur_size(2),1);
         plot(optimal_line,'k:','LineWidth',5); % true optimal value
         xlabel('Number of function evaluations')
         ylabel('Objective function value')
         title(sprintf('<%s function>   Iteration: %5d  Evaluation: %5d',fcn_name,k,num_evaluation));
         legend('MTS-MARS','True optimal value','Location','southeast');
-        ylim([c_best_H(1)*1.1 1000]);
+        ylim([best_H(1)*1.1 1000]);
         grid on
         drawnow;
     end
@@ -166,7 +147,7 @@ end
 
 %% FINAL REPORT
 fprintf('iter: %5d, eval: %5d, cur best: %8.4f, true optimum: %8.4f \n',...
-    k,num_evaluation,c_best_H(k),optimal_objective_value);
+    k,num_evaluation,best_H(k),optimal_objective_value);
 fprintf('Main loop ends \n');
 tMainLoop=toc; % count main loop time
 fprintf('Main loop takes %8.4f seconds \n',tMainLoop);
