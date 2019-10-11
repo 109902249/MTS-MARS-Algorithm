@@ -5,8 +5,8 @@ function [eta_x,eta_x2]=truncated_mean_para_fcn(left_bound,right_bound,mu,var)
 %--------------------------------------------------------------------------
 % Output arguments
 % ----------------
-% eta_x  : the expectation of X under the sampling distribution
-% eta_x2 : the expectation of X^2 under the sampling distribution
+% eta_x       : the expectation of X under the sampling distribution
+% eta_x2      : the expectation of X^2 under the sampling distribution
 %
 % Input arguments
 % ---------------
