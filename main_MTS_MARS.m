@@ -107,7 +107,6 @@ while num_evaluation+1<=budget
     cur_h=noisy_observation(cur_H,noise_case,K,noise_bound); % current noisy observation
     num_evaluation=num_evaluation+1; best_H(k)=max(best_H(end),cur_H);    
     
-
     %% ADAPTIVE HYPERPARAMETERS
     [alpha,beta,t]=adaptive_hyper_para(k,a1,a2,gamma_a,b1,b2,gamma_b,best_H(k),gamma_t,t);
     
